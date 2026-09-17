@@ -6,6 +6,7 @@ user-entered fields in the Streamlit app.
 Run once locally:  python train_model.py
 Produces: model_artifacts.joblib
 """
+import os
 import pandas as pd, numpy as np, holidays, warnings, joblib
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
@@ -15,8 +16,10 @@ from sklearn.model_selection import train_test_split
 
 warnings.filterwarnings('ignore')
 
-GRAMMY_CSV = "../research/Copy of Grammy_IG_posts_v2.csv"
-ANALYTIC_CSV = "../research/Copy of Instagram_Analytics.csv"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+GRAMMY_CSV = os.path.join(BASE_DIR, "..", "data", "grammy_posts.csv")
+ANALYTIC_CSV = os.path.join(BASE_DIR, "..", "data", "instagram_analytics.csv")
+OUTPUT_ARTIFACT = os.path.join(BASE_DIR, "model_artifacts.joblib")
 
 # ---------------------------------------------------------------- load data
 df_grammy_raw = pd.read_csv(GRAMMY_CSV, sep=';')
@@ -208,5 +211,5 @@ artifacts = {
     "catcol": catcol,
     "holdout_metrics": {"r2": r2, "rmse": rmse, "mae": mae},
 }
-joblib.dump(artifacts, "model_artifacts.joblib")
-print("Saved model_artifacts.joblib")
+joblib.dump(artifacts, OUTPUT_ARTIFACT)
+print("Saved", OUTPUT_ARTIFACT)

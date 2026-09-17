@@ -147,16 +147,22 @@ p {
   box-shadow: none;
 }
 
+[data-testid="stNumberInputContainer"] {
+  position: relative;
+}
 [data-testid="stNumberInputContainer"] > div:last-child {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
   width: auto;
   gap: 2px;
-  margin-left: 2px;
   align-items: center;
 }
 [data-testid="stNumberInputStepDown"],
 [data-testid="stNumberInputStepUp"] {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   min-width: 0;
   padding: 0;
   border-radius: 6px;
@@ -167,7 +173,7 @@ p {
   height: 10px;
 }
 [data-testid="stNumberInputField"] {
-  padding: 0 12px !important;
+  padding: 8px 76px 8px 12px !important;
   line-height: normal !important;
 }
 
