@@ -34,8 +34,8 @@ def bucket(h):
 
 
 def build_feature_row(followers, number_hashtags, length_caption, publication_weekday,
-                       post_datetime, is_video, is_carousel, user_post_count,
-                       user_median_engagement):
+                       post_datetime, is_video, is_carousel, post_images,
+                       user_post_count, user_median_engagement):
     hour = post_datetime.hour
     reach_time_bucket = bucket(hour)
     us_holidays = holidays.US(years=[post_datetime.year])
@@ -46,7 +46,6 @@ def build_feature_row(followers, number_hashtags, length_caption, publication_we
                              labels=['none', 'low', 'medium', 'high'])[0]
     caption_length_bucket = pd.cut([length_caption], bins=[-1, 50, 150, 300, 10000],
                                     labels=['short', 'medium', 'long', 'very_long'])[0]
-    post_images = 1 if (not is_video and not is_carousel) else 0
 
     raw = {
         "number_hashtags": number_hashtags,
@@ -95,6 +94,10 @@ with st.form("post_form"):
     with col1:
         followers = st.number_input("Follower count", min_value=0, value=10000, step=100)
         number_hashtags = st.number_input("Number of hashtags", min_value=0, max_value=30, value=5)
+        number_images = st.number_input("Number of images (carousel slides / single image)",
+                                        min_value=0, max_value=30, value=1, step=1,
+                                        help="Images / slides in the post. Use 0 for video-only posts; "
+                                             "set 2+ for carousels.")
         caption_text = st.text_area("Caption (used to measure length)", height=100,
                                      placeholder="Type or paste your caption here...")
         length_caption = len(caption_text)
@@ -126,7 +129,7 @@ if submitted:
     X = build_feature_row(
         followers=followers, number_hashtags=number_hashtags, length_caption=length_caption,
         publication_weekday=publication_weekday, post_datetime=post_datetime,
-        is_video=is_video, is_carousel=is_carousel,
+        is_video=is_video, is_carousel=is_carousel, post_images=number_images,
         user_post_count=user_post_count, user_median_engagement=user_median_engagement,
     )
     pred, cluster = predict(X)
