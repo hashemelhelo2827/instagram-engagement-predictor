@@ -1,80 +1,104 @@
+<div align="center">
+
+<img src="assets/icon.svg" alt="Instagram Engagement Predictor icon" width="72" align="center" />
+
 # Instagram Engagement Predictor
 
-Predict how much engagement a planned Instagram post will get, before you hit
-publish. The app combines **KMeans clustering** and **mixture-of-experts
-regressors** (Random Forest + Hist-Gradient Boosting) trained on 64,000+
-historical Instagram posts, then keeps predictions honest with reported
-held-out performance.
+*Predict engagement before you publish — a mixture-of-experts model trained on 64,000+ Instagram posts.*
 
-## How it works
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://instagram-engagement-predictor-8nprsw4e8mmarpvaznpzzd.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square)](https://www.python.org/downloads/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.9-orange?style=flat-square)](https://scikit-learn.org/stable/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.58-red?style=flat-square)](https://streamlit.io)
 
-1. **Compose your post** — audience size, hashtags, caption length, number of
-   images/slides, format (image, carousel, reel) and when it goes live.
-2. **Route to an expert** — KMeans groups the post into one of three
-   historical behavior clusters.
-3. **Get a prediction** — a Random Forest or Gradient Boosting expert, tuned
-   per cluster, estimates likes + comments (+ shares/saves where available).
+[Live demo](#live-demo) • [Features](#features) • [Quick start](#quick-start) • [How it works](#how-it-works) • [Repository](#repository-layout) • [Retraining](#retraining) • [Resources](#resources)
 
-> **Long-tail data caveat:** engagement is long-tailed (a few viral posts).
-> Predictions are most reliable for typical posts and less precise on extreme
-> outliers. Reported R² / RMSE / MAE are held-out numbers shown at the bottom
-> of the app.
+</div>
 
-## Repository layout
+## Live demo
 
-```
-├── app.py                      # Streamlit app (entry point)
-├── requirements.txt            # Python dependencies
-├── .streamlit/config.toml      # Theme (light + dark palettes, fonts)
-├── assets/                     # App styling & icon
-│   ├── style.css               # Editorial theme, theme-aware CSS
-│   └── icon.svg                # Tab icon
-├── ml/                         # Model pipeline
-│   ├── train_model.py          # Training script (KMeans + experts)
-│   └── model_artifacts.joblib  # Trained scaler, clusters & experts
-├── data/                       # Source datasets (not used at runtime)
-│   ├── grammy_posts.csv        # Grammy IG posts, semi-colon separated
-│   └── instagram_analytics.csv # Account analytics
-├── notebooks/                  # Original research notebook (Colab-oriented)
-└── README.md
-```
+Try it right now, no setup needed:
 
-The deployed app never reads the CSVs — it only needs
-`ml/model_artifacts.joblib`. Data and notebook are kept for reproducibility.
+**→ [instagram-engagement-predictor-8nprsw4e8mmarpvaznpzzd.streamlit.app](https://instagram-engagement-predictor-8nprsw4e8mmarpvaznpzzd.streamlit.app/)**
 
-## Run locally (Windows)
+Describe a post you're planning — followers, hashtags, caption, number of images,
+format (image, carousel, reel) and when it goes live — and get an estimated
+engagement score instantly. A light/dark theme toggle is built in.
 
-`scikit-learn` is pinned to `==1.9.1` because the model artifact is pickled
-with that version. Keep the pin in sync with whatever version you retrain
-with.
+## Features
+
+- **Mixture-of-experts prediction** — KMeans routes each post to one of three
+  specialist regressors (Random Forest or Hist-Gradient Boosting).
+- **Real planning inputs** — follower count, hashtags, caption length, image
+  count, post type, posting date and time, plus account history.
+- **Honest model card** — held-out R², RMSE and MAE are shown right in the app.
+- **Editorial UI** — theme-aware light & dark palettes, custom fonts and layout.
+
+## Quick start
+
+The project pins `scikit-learn==1.9.1` because `model_artifacts.joblib` is
+pickled with that version.
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Deploy on Streamlit Community Cloud (free)
+> [!IMPORTANT]
+> Keep `scikit-learn` pinned to the exact version used to retrain the model.
+> If you bump the version, retrain (see [Retraining](#retraining)) so the pickle
+> stays compatible.
 
-1. Push this repository to GitHub.
-2. Sign in at https://streamlit.io with your GitHub account.
-3. **Create app** → pick this repo and branch, set the main file path to
-   **`app.py`**.
-4. Click **Deploy**. Streamlit installs `requirements.txt` and gives you a
-   public `*.streamlit.app` URL.
+## How it works
 
-Redeploys happen automatically on every push to the deployed branch.
+1. **Compose your post** — audience size, caption, hashtags, image count, format
+   and publish date/time.
+2. **Route to an expert** — KMeans clusters the post among three historical
+   behavior groups.
+3. **Get a prediction** — the cluster's tuned regressor estimates engagement
+   (likes + comments, plus shares/saves where recorded).
 
-## Retraining on new data
+| Cluster | Model | Held-out R² |
+| :---: | :--- | :---: |
+| 0 | Random Forest | 0.92 |
+| 1 | Hist-Gradient Boosting | 0.60 |
+| 2 | Hist-Gradient Boosting | 0.89 |
+| **Overall** | **Mixture-of-experts** | **0.87** |
+
+> [!WARNING]
+> Engagement is long-tailed — a few posts go viral. Predictions are most
+> reliable for typical posts and less precise for extreme outliers.
+
+## Repository layout
+
+```
+├── app.py                    # Streamlit app (entry point)
+├── requirements.txt          # Python dependencies
+├── .streamlit/config.toml    # Theme (light + dark palettes, fonts)
+├── assets/                   # style.css + icon.svg (UI styling)
+├── ml/                       # train_model.py + model_artifacts.joblib
+├── data/                     # training CSVs (not used at runtime)
+├── notebooks/                # original research notebook (Colab-oriented)
+└── README.md
+```
+
+The deployed app only needs `ml/model_artifacts.joblib` — it never reads the
+CSVs in `data/` at runtime.
+
+## Retraining
+
+Regenerate the artifact from the same pipeline:
 
 ```bash
 cd ml
 python train_model.py
 ```
 
-This regenerates `ml/model_artifacts.joblib` with the same pipeline. Commit
-the new artifact and push — the app picks it up on the next deploy.
-The `notebooks/` copy is the original Colab research; `train_model.py` is the
-scripted, reproducible version of the same pipeline.
+This rewrites `ml/model_artifacts.joblib`, then commit and push — the deployed
+app picks it up on the next Streamlit Cloud redeploy.
 
-> If you upgrade or downgrade scikit-learn, retrain so the pickle version
-> matches the pin in `requirements.txt`.
+## Resources
+
+- [Streamlit Community Cloud — Deploy your app](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app)
+- [scikit-learn user guide](https://scikit-learn.org/stable/user_guide.html)
+- [Streamlit theming](https://docs.streamlit.io/develop/concepts/configuration/theming)
