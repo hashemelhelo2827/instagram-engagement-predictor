@@ -83,8 +83,7 @@ Open the local URL Streamlit prints (usually http://localhost:8501).
 4. **Standardize** — features are scaled to zero mean / unit variance.
 5. **Route** — KMeans assigns the post to one of three clusters.
 6. **Predict** — the cluster's expert regressor produces the engagement estimate.
-7. **Inverse log** — `expm1` maps the prediction back to the raw scale reported
-   in the UI.
+
 
 ### Target definition
 
