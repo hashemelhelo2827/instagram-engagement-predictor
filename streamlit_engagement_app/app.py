@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -10,7 +11,8 @@ st.set_page_config(page_title="Instagram Engagement Predictor", page_icon="📈"
 # ----------------------------------------------------------------- load model
 @st.cache_resource
 def load_artifacts():
-    return joblib.load("model_artifacts.joblib")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    return joblib.load(os.path.join(base_dir, "model_artifacts.joblib"))
 
 artifacts = load_artifacts()
 scaler = artifacts["scaler"]
