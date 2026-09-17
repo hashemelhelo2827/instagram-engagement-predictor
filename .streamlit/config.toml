@@ -1,0 +1,24 @@
+[theme]
+base = "light"
+baseRadius = "14px"
+buttonRadius = "8px"
+baseFontWeight = 400
+font = "Outfit:https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap"
+codeFont = "JetBrains Mono:https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
+headingFont = "Outfit:https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&display=swap"
+metricValueFontSize = "3rem"
+metricValueFontWeight = 650
+
+[theme.light]
+primaryColor = "#9B4F2F"
+backgroundColor = "#F6F5F1"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#262420"
+borderColor = "#E5E1D8"
+
+[theme.dark]
+primaryColor = "#C98A5F"
+backgroundColor = "#1C1A17"
+secondaryBackgroundColor = "#262420"
+textColor = "#EDEAE3"
+borderColor = "#3A372F"

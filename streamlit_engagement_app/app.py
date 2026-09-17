@@ -4,9 +4,20 @@ import pandas as pd
 import numpy as np
 import joblib
 import holidays
-from datetime import date, time
+from datetime import date, time, datetime
 
-st.set_page_config(page_title="Instagram Engagement Predictor", page_icon="📈", layout="centered")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+st.set_page_config(page_title="Instagram Engagement Predictor",
+                   page_icon=os.path.join(BASE_DIR, "icon.svg"), layout="centered")
+
+
+def inject_css():
+    with open(os.path.join(BASE_DIR, "style.css"), "r", encoding="utf-8") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+
+inject_css()
 
 # ----------------------------------------------------------------- load model
 @st.cache_resource
@@ -84,12 +95,19 @@ def predict(X):
 
 
 # --------------------------------------------------------------------- UI
-st.title("📈 Instagram Engagement Predictor")
-st.caption("Estimate likes + comments (+ shares/saves where applicable) for a planned post, "
-           "using a mixture-of-experts model (KMeans clustering + Random Forest / Gradient "
-           "Boosting) trained on historical Instagram data.")
+st.markdown(
+    """<div class="hero">
+    <div class="hero-eyebrow">Instagram engagement research</div>
+    <h1>How much will your next post perform?</h1>
+    <p>Estimate likes, comments and shares for a planned post, using a
+    mixture-of-experts model trained on more than 64,000 historical Instagram
+    posts.</p>
+    </div>""",
+    unsafe_allow_html=True,
+)
 
 with st.form("post_form"):
+    st.markdown('<div class="steplbl">01 &middot; Post details</div>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         followers = st.number_input("Follower count", min_value=0, value=10000, step=100)
@@ -109,7 +127,8 @@ with st.form("post_form"):
         publication_weekday = post_date.strftime("%A")
         st.caption(f"Day of week: {publication_weekday}")
 
-    st.markdown("**Account posting history** (leave at 0 if unknown / new account)")
+    st.markdown('<div class="steplbl">02 &middot; Account history</div>', unsafe_allow_html=True)
+    st.caption("Leave at 0 if this is a new account.")
     col3, col4 = st.columns(2)
     with col3:
         user_post_count = st.number_input("Number of previous posts by this account",
@@ -121,7 +140,6 @@ with st.form("post_form"):
     submitted = st.form_submit_button("Predict engagement", use_container_width=True)
 
 if submitted:
-    from datetime import datetime
     post_datetime = datetime.combine(post_date, post_time_of_day)
     is_video = post_type == "Video / Reel"
     is_carousel = post_type == "Carousel"
@@ -134,19 +152,43 @@ if submitted:
     )
     pred, cluster = predict(X)
 
-    st.success(f"### Predicted engagement: **{pred:,.0f}**")
-    st.caption(f"(routed to expert model {cluster} — "
-               f"{experts[cluster].__class__.__name__})")
+    with st.container(border=True):
+        st.metric("Predicted engagement", f"{pred:,.0f}")
+        st.caption(f"Routed to expert model {cluster} - "
+                   f"{experts[cluster].__class__.__name__}.")
 
     with st.expander("See the features the model used"):
         st.dataframe(X.T.rename(columns={0: "value"}))
 
+st.markdown(
+    """<div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h4>Compose your post</h4>
+      <p>Describe the post: audience size, captions, hashtags, format and when it goes live.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h4>Route to an expert</h4>
+      <p>KMeans clustering places the post among three historical behavior clusters.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h4>Get a prediction</h4>
+      <p>A Random Forest or Gradient Boosting expert, tuned per cluster, estimates engagement.</p>
+    </div>
+    </div>""",
+    unsafe_allow_html=True,
+)
+
 st.divider()
 metrics = artifacts.get("holdout_metrics", {})
 if metrics:
-    st.caption(
-        f"Model held-out performance: R² {metrics.get('r2', 0):.3f} · "
-        f"RMSE {metrics.get('rmse', 0):,.0f} · MAE {metrics.get('mae', 0):,.0f}. "
-        f"Note: this dataset has a long-tailed engagement distribution (a few viral posts), "
-        f"so predictions for typical posts are more reliable than for extreme outliers."
+    st.markdown(
+        f"""<div class="footnote">Model held-out performance: R²
+        {metrics.get('r2', 0):.3f} &middot; RMSE {metrics.get('rmse', 0):,.0f}
+        &middot; MAE {metrics.get('mae', 0):,.0f}. The dataset is long-tailed
+        (a few viral posts), so predictions for typical posts are more
+        reliable than for extreme outliers.</div>""",
+        unsafe_allow_html=True,
     )
